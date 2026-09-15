@@ -128,6 +128,15 @@ output is written to the ignored
 `target/kobo-compatible/arm-unknown-linux-gnueabihf/release/plato` path and is
 automatically selected by `dist.sh`.
 
+The NickelMenu installation also includes a separate `Plato benchmark` entry.
+Use the normal `Plato` entry for everyday reading. The benchmark entry enables
+the opt-in instrumentation and writes JSONL to
+`.adds/plato/benchmark.jsonl`; collect it from the headless host with:
+
+```sh
+./collect-kobo-benchmark.sh
+```
+
 The default build downloads the release archive and required prebuilt Kobo
 libraries. It writes ignored working artifacts to `libs/`, `bin/`,
 `resources/`, `target/`, and `dist/`. Do not hand-edit those outputs.

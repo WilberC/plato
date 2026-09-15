@@ -66,7 +66,7 @@ printf '%s\n' "$mount_options" | grep -q 'rw' || error 'Kobo did not mount read-
 printf '%s\n' '[INFO] Installing Plato files.'
 sudo mkdir -p "$MOUNTPOINT/.adds/plato"
 sudo cp -r --no-preserve=ownership dist/. "$MOUNTPOINT/.adds/plato/"
-sudo cp --no-preserve=ownership contrib/NickelMenu/plato "$MOUNTPOINT/.adds/nm/plato"
+sudo cp --no-preserve=ownership contrib/NickelMenu/plato* "$MOUNTPOINT/.adds/nm/"
 sudo chmod +x "$MOUNTPOINT/.adds/plato/plato.sh"
 
 if [ ! -e "$MOUNTPOINT/.adds/plato/Settings.toml" ]; then
@@ -83,6 +83,7 @@ fi
 [ -x "$MOUNTPOINT/.adds/plato/plato" ] || error 'Installed Plato binary is not executable.'
 [ -x "$MOUNTPOINT/.adds/plato/plato.sh" ] || error 'Installed launcher is not executable.'
 [ -f "$MOUNTPOINT/.adds/nm/plato" ] || error 'NickelMenu entry was not installed.'
+[ -f "$MOUNTPOINT/.adds/nm/plato-benchmark" ] || error 'NickelMenu benchmark entry was not installed.'
 [ -f "$MOUNTPOINT/.adds/plato/Settings.toml" ] || error 'Plato settings were not installed.'
 
 printf 'Installed files: '
