@@ -344,6 +344,22 @@ pub fn run() -> Result<(), Error> {
         match evt {
             Event::Device(de) => {
                 match de {
+                    event @ DeviceEvent::Button { code: ButtonCode::Backward,
+                                                  status: ButtonStatus::Released, .. }
+                        if benchmark.enabled() && benchmark_page_state(view.as_ref()).is_some() => {
+                        let (page, cache_entries) = benchmark_page_state(view.as_ref()).unwrap();
+                        benchmark.start_page("previous", page, cache_entries);
+                        handle_event(view.as_mut(), &Event::Device(event), &tx, &mut bus, &mut rq, &mut context);
+                        benchmark.mark_page_handler_complete();
+                    },
+                    event @ DeviceEvent::Button { code: ButtonCode::Forward,
+                                                  status: ButtonStatus::Released, .. }
+                        if benchmark.enabled() && benchmark_page_state(view.as_ref()).is_some() => {
+                        let (page, cache_entries) = benchmark_page_state(view.as_ref()).unwrap();
+                        benchmark.start_page("next", page, cache_entries);
+                        handle_event(view.as_mut(), &Event::Device(event), &tx, &mut bus, &mut rq, &mut context);
+                        benchmark.mark_page_handler_complete();
+                    },
                     DeviceEvent::Button { code: ButtonCode::Power, status: ButtonStatus::Released, .. } => {
                         if context.shared || context.covered {
                             continue;
