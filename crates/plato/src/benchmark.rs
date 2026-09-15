@@ -1,5 +1,6 @@
 use std::fs::{File, OpenOptions};
 use std::io::{BufWriter, Write};
+use std::path::Path;
 use std::time::Instant;
 
 use plato_core::device::CURRENT_DEVICE;
@@ -27,12 +28,20 @@ impl Benchmark {
     }
 
     pub fn new() -> Benchmark {
+        let marker_enabled = Path::new("/mnt/onboard/.adds/plato/benchmark.enabled").exists();
         let enabled = std::env::var("PLATO_BENCHMARK")
             .map(|v| v == "1" || v == "true")
-            .unwrap_or(false);
+            .unwrap_or(false)
+            || marker_enabled;
         let output = if enabled {
             let path = std::env::var("PLATO_BENCHMARK_OUTPUT")
-                .unwrap_or_else(|_| "benchmark.jsonl".to_string());
+                .unwrap_or_else(|_| {
+                    if marker_enabled {
+                        "/mnt/onboard/.adds/plato/benchmark.jsonl".to_string()
+                    } else {
+                        "benchmark.jsonl".to_string()
+                    }
+                });
             match OpenOptions::new().create(true).append(true).open(&path) {
                 Ok(file) => Some(BufWriter::new(file)),
                 Err(err) => {
