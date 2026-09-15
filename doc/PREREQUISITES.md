@@ -140,6 +140,15 @@ the opt-in instrumentation and writes JSONL to
 Re-running `install-kobo.sh` clears the device's previous Plato and benchmark
 logs so the next validation run starts from a clean state.
 
+To remove only Plato before a clean reinstall, connect the Kobo and run:
+
+```sh
+./uninstall-kobo.sh
+```
+
+The script refuses to continue unless the existing NickelMenu and KOReader
+directories are present, and it preserves `Test-Books/`.
+
 The default build downloads the release archive and required prebuilt Kobo
 libraries. It writes ignored working artifacts to `libs/`, `bin/`,
 `resources/`, `target/`, and `dist/`. Do not hand-edit those outputs.
