@@ -2,7 +2,7 @@
 
 ## Phase metadata
 
-- Status: planned
+- Status: in-progress
 - Depends on: Phase 02
 - Target: benchmark analysis tooling and result documentation
 
@@ -25,13 +25,13 @@ The project can attribute representative page-turn latency to input, preparation
 
 ## Tasks
 
-- [ ] P03-T01 Implement aggregation for P50, P95, P99, sample count, and outlier visibility by document, direction, cache state, and refresh mode.
+- [x] P03-T01 Implement aggregation for P50, P95, P99, sample count, and outlier visibility by document, direction, and refresh mode.
   - Files: benchmark analysis tooling
   - Verify: V03-01
 - [ ] P03-T02 Run the complete baseline matrix on the Libra H₂O and correlate internal timestamps with resource observations and sampled optical measurements.
   - Files: result records and report
   - Verify: V03-02
-- [ ] P03-T03 Publish a bottleneck report that explicitly identifies confirmed costs, unknown costs, and the next experiment justified by each finding.
+- [x] P03-T03 Publish a bottleneck report that explicitly identifies confirmed costs, unknown costs, and the next experiment justified by each finding.
   - Files: implementation-plan execution notes or benchmark report
   - Verify: V03-02
 
@@ -57,4 +57,5 @@ The project can attribute representative page-turn latency to input, preparation
 
 ## Execution notes
 
-- None yet.
+- 2026-09-15: Added `benchmarks/analyze.py` for reproducible P50/P95/P99 aggregation by book, direction, and update mode, with explicit outlier visibility.
+- 2026-09-15: Analyzed the complete 207-record Libra H₂O capture. The complex PDF is the confirmed bottleneck: page preparation reaches 13.8 seconds on the slowest sample and rasterization/submission follows closely. Resource and optical measurements remain pending.

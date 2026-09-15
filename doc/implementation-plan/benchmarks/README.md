@@ -14,6 +14,7 @@ runner creates a JSON metadata sidecar and starts the headless emulator:
 ./benchmarks/run-instrumented.sh benchmarks/results/run-a.jsonl
 ./benchmarks/run-instrumented.sh benchmarks/results/run-b.jsonl
 ./benchmarks/compare.py benchmarks/results/run-a.jsonl benchmarks/results/run-b.jsonl
+python3 benchmarks/analyze.py benchmarks/results/run-a.jsonl benchmarks/results/report.md
 ```
 
 Each JSONL record contains a schema version, device model, book path, display
