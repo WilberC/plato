@@ -11,19 +11,19 @@ case "$method" in
 		./download.sh 'libs/*'
 		cd libs
 
-		ln -s libz.so.1 libz.so
-		ln -s libbz2.so.1.0 libbz2.so
+		ln -sf libz.so.1 libz.so
+		ln -sf libbz2.so.1.0 libbz2.so
 
-		ln -s libpng16.so.16 libpng16.so
-		ln -s libjpeg.so.9 libjpeg.so
-		ln -s libopenjp2.so.7 libopenjp2.so
-		ln -s libjbig2dec.so.0 libjbig2dec.so
+		ln -sf libpng16.so.16 libpng16.so
+		ln -sf libjpeg.so.9 libjpeg.so
+		ln -sf libopenjp2.so.7 libopenjp2.so
+		ln -sf libjbig2dec.so.0 libjbig2dec.so
 
-		ln -s libfreetype.so.6 libfreetype.so
-		ln -s libharfbuzz.so.0 libharfbuzz.so
+		ln -sf libfreetype.so.6 libfreetype.so
+		ln -sf libharfbuzz.so.0 libharfbuzz.so
 
-		ln -s libgumbo.so.2 libgumbo.so
-		ln -s libdjvulibre.so.21 libdjvulibre.so
+		ln -sf libgumbo.so.2 libgumbo.so
+		ln -sf libdjvulibre.so.21 libdjvulibre.so
 
 		cd ../thirdparty
 		./download.sh mupdf
@@ -67,4 +67,5 @@ cd mupdf_wrapper
 ./build-kobo.sh
 cd ..
 
+[ "${PLATO_SKIP_CARGO:-0}" = 1 ] && exit 0
 cargo build --release --target=arm-unknown-linux-gnueabihf -p plato

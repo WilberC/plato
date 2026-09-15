@@ -37,7 +37,13 @@ find dist/css -name '*-user.css' -delete
 find dist/keyboard-layouts -name '*-user.json' -delete
 find dist/hyphenation-patterns -name '*.bounds' -delete
 find dist/scripts -name 'wifi-*-*.sh' -delete
-PLATO_BINARY=target/arm-unknown-linux-gnueabihf/release/plato
+if [ -n "${PLATO_BINARY:-}" ]; then
+	PLATO_BINARY=$PLATO_BINARY
+elif [ -e target/kobo-compatible/arm-unknown-linux-gnueabihf/release/plato ]; then
+	PLATO_BINARY=target/kobo-compatible/arm-unknown-linux-gnueabihf/release/plato
+else
+	PLATO_BINARY=target/arm-unknown-linux-gnueabihf/release/plato
+fi
 if readelf -V "$PLATO_BINARY" 2>/dev/null |
 	grep -Eq 'GLIBC_(2\.(1[9]|[2-9][0-9])|[3-9])'; then
 	printf '%s\n' 'The cross-linked Plato binary requires a newer glibc than Kobo firmware provides.' 1>&2

@@ -108,6 +108,26 @@ mise exec -- ./build.sh
 mise exec -- ./dist.sh
 ```
 
+### Kobo-compatible ARM build on newer Debian hosts
+
+The host cross compiler must not be used directly for the physical Kobo
+package. Debian 13's default ARM sysroot can emit GLIBC symbols newer than the
+Kobo firmware provides. Build the device binary through the pinned Docker
+builder instead:
+
+```sh
+./build-kobo-compatible.sh
+./dist.sh
+```
+
+This requires Docker and network access. The builder uses a Debian Jessie
+armhf sysroot with libc 2.19, removes its non-PIC static `libm.a`, and forces
+the Jessie `libgcc_s.so.1`. The compatibility check must report no symbol
+newer than `GLIBC_2.18`, matching the known-compatible release binary. The
+output is written to the ignored
+`target/kobo-compatible/arm-unknown-linux-gnueabihf/release/plato` path and is
+automatically selected by `dist.sh`.
+
 The default build downloads the release archive and required prebuilt Kobo
 libraries. It writes ignored working artifacts to `libs/`, `bin/`,
 `resources/`, `target/`, and `dist/`. Do not hand-edit those outputs.
@@ -235,8 +255,8 @@ The Debian linker emitted warnings about local symbols in the downloaded
 cross-compiled `libstdc++`; install `g++-arm-linux-gnueabihf` and retry before
 investigating those warnings as a separate issue.
 
-The Debian 13 ARM cross toolchain can also produce a binary requiring glibc
-versions newer than the Kobo firmware provides. `dist.sh` checks the linked
-versions and automatically selects the compatible binary from the matching
-release archive when this occurs. Verify the resulting binary with
+The Debian 13 ARM cross toolchain can produce a binary requiring glibc
+versions newer than the Kobo firmware provides. Use `build-kobo-compatible.sh`
+instead of `build.sh` for physical-device packages. `dist.sh` prefers its
+output and still checks the linked versions; verify the resulting binary with
 `readelf -V dist/plato` before installing.
