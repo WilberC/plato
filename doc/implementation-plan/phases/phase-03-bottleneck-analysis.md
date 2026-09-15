@@ -1,0 +1,60 @@
+# Phase 03: Produce an Evidence-Based Bottleneck Report
+
+## Phase metadata
+
+- Status: planned
+- Depends on: Phase 02
+- Target: benchmark analysis tooling and result documentation
+
+## Outcome
+
+The project can attribute representative page-turn latency to input, preparation, rendering, framebuffer, driver completion, and the remaining physical-display interval.
+
+## Scope
+
+- In: repeated runs, distributions, cold/cached comparison, forward/backward comparison, resource observations, bottleneck report.
+- Out: optimization changes.
+
+## Tool ownership
+
+| Operation | Project command | Output ownership | Outputs |
+| --- | --- | --- | --- |
+| Result parsing | Benchmark analysis command created in this phase | Reproducible tool-owned | Tables/plots generated from results |
+| Device profiling | Existing platform tools plus documented commands | Intentional manual exception | CPU/RAM observations |
+| Optical validation | Fixed camera/sensor procedure for sampled runs | Intentional manual exception | Optical latency evidence |
+
+## Tasks
+
+- [ ] P03-T01 Implement aggregation for P50, P95, P99, sample count, and outlier visibility by document, direction, cache state, and refresh mode.
+  - Files: benchmark analysis tooling
+  - Verify: V03-01
+- [ ] P03-T02 Run the complete baseline matrix on the Libra H₂O and correlate internal timestamps with resource observations and sampled optical measurements.
+  - Files: result records and report
+  - Verify: V03-02
+- [ ] P03-T03 Publish a bottleneck report that explicitly identifies confirmed costs, unknown costs, and the next experiment justified by each finding.
+  - Files: implementation-plan execution notes or benchmark report
+  - Verify: V03-02
+
+## Validation milestones
+
+- `V03-01` Feed known fixture data into the aggregator and verify exact percentile grouping and unit conversions.
+- `V03-02` Review a real report containing all required scenarios and a conclusion supported by recorded measurements.
+
+## Parallelization
+
+- P03-T01 can proceed while the device matrix is prepared; P03-T02 and P03-T03 remain dependent on real results.
+
+## Risks and mitigations
+
+- Percentiles from too few samples are misleading: record sample counts and repeat until the report can distinguish noise from a stable difference.
+- Optical measurements may be unavailable in every run: use them as periodic validation, not as the only performance signal.
+
+## Completion criteria
+
+- [ ] A reproducible report identifies the dominant costs for each representative scenario.
+- [ ] The next optimization experiment is selected from evidence rather than intuition.
+- [ ] No optimization is accepted without a before/after comparison plan.
+
+## Execution notes
+
+- None yet.
