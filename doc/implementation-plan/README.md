@@ -2,7 +2,7 @@
 
 ## Plan metadata
 
-- Status: planned
+- Status: in-progress
 - Scope: Plato-based Kobo reader investigation and staged OPDS product path
 - Target: `doc/implementation-plan/`
 - Last updated: 2026-09-14
@@ -49,7 +49,7 @@ Keep the first changes documentation and measurement-oriented. Pin the upstream 
 
 | Phase | Outcome | Depends on | Status |
 | --- | --- | --- | --- |
-| [Phase 01](phases/phase-01-baseline.md) | Reproducible unmodified Plato baseline on Libra H₂O | None | planned |
+| [Phase 01](phases/phase-01-baseline.md) | Reproducible unmodified Plato baseline on Libra H₂O | None | in-progress |
 | [Phase 02](phases/phase-02-instrumentation.md) | Opt-in stage timing and benchmark output | Phase 01 | planned |
 | [Phase 03](phases/phase-03-bottleneck-analysis.md) | Evidence-based bottleneck report | Phase 02 | planned |
 | [Phase 04](phases/phase-04-page-turn-pipeline.md) | Measured page preparation and bounded pre-render/cache experiments | Phase 03 | planned |

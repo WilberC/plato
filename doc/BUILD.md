@@ -1,5 +1,8 @@
 # Build
 
+For the complete Debian and headless installation checklist, see
+[PREREQUISITES](PREREQUISITES.md).
+
 Start by cloning the repository:
 
 ```sh

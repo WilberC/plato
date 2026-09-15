@@ -2,7 +2,7 @@
 
 ## Phase metadata
 
-- Status: planned
+- Status: in-progress
 - Depends on: None
 - Target: `README.md`, `doc/BUILD.md`, benchmark metadata and external test data
 
@@ -58,4 +58,9 @@ An unmodified, pinned Plato build runs on the physical Kobo Libra H₂O and prod
 
 ## Execution notes
 
-- None yet.
+- Prepared the baseline procedure and record templates in `doc/implementation-plan/benchmarks/`.
+- Local validation: `mise exec -- cargo metadata --locked --no-deps --format-version 1` passed with Rust/Cargo 1.98.1.
+- Confirmed external evidence: Libra H₂O identity/firmware, representative corpus location/checksums, successful emulator smoke test, and physical installation. Pending: repeated device observations and successful physical launch after the glibc-compatible binary deployment.
+- Capability discrepancy to resolve during corpus assembly: the plan names CBR, while `README.md` currently documents CBZ but not CBR.
+- The headless installation path will reuse the existing NickelMenu installation detected at `.adds/nm`; an external NickelMenu archive is not required for the first install.
+- Debian 13's default ARM cross sysroot produced `dist/plato` requirements up to `GLIBC_2.39`, incompatible with the Kobo; `dist.sh` now detects this and selects the compatible `plato` binary from the matching release archive while the toolchain/sysroot issue remains open.
