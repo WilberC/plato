@@ -2,7 +2,8 @@
 
 set -eu
 
-SOURCE=${1:-/home/wilber/forge-app/test-books}
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+SOURCE=${1:-"$SCRIPT_DIR/benchmarks/corpus"}
 MOUNTPOINT=${2:-/mnt/kobo}
 TARGET="$MOUNTPOINT/Test-Books"
 
@@ -15,7 +16,7 @@ if [ "${1:-}" = '--help' ] || [ "${1:-}" = '-h' ]; then
 	cat <<'EOF'
 Usage: ./copy-test-books.sh [SOURCE] [MOUNTPOINT]
 
-Copy the prepared Phase 01 corpus to Test-Books/ on the Kobo.
+Copy the versioned Phase 01 corpus to Test-Books/ on the Kobo.
 EOF
 	exit 0
 fi

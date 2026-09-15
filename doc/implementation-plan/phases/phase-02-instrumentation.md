@@ -2,7 +2,7 @@
 
 ## Phase metadata
 
-- Status: planned
+- Status: in-progress
 - Depends on: Phase 01
 - Target: `crates/plato/src/app.rs`, `crates/core/src/input.rs`, `crates/core/src/framebuffer/`, benchmark output code and configuration
 
@@ -57,4 +57,13 @@ An opt-in benchmark build records machine-readable timestamps for page-turn stag
 
 ## Execution notes
 
-- None yet.
+- 2026-09-15: Added opt-in JSONL page-turn instrumentation in the application
+  loop. It records page identity, direction, cache counts, update modes, and
+  monotonic boundaries for input receipt, page preparation, rasterization, and
+  framebuffer submission. Completion and optical readiness remain explicitly
+  unobservable.
+- 2026-09-15: Added `benchmarks/run-instrumented.sh` and `benchmarks/compare.py`
+  for repeatable headless runs and metadata-preserving comparison. Physical
+  Kobo validation still requires an instrumented binary linked against the
+  device-compatible runtime; the Debian 13 ARM toolchain previously produced
+  GLIBC requirements newer than the Kobo firmware.

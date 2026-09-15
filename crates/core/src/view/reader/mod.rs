@@ -239,6 +239,10 @@ fn word_separator(lang: &str) -> &'static str {
 }
 
 impl Reader {
+    pub fn benchmark_page_state(&self) -> (String, usize) {
+        (format!("{:?}", self.current_page), self.cache.len())
+    }
+
     pub fn new(rect: Rectangle, mut info: Info, hub: &Hub, context: &mut Context) -> Option<Reader> {
         let id = ID_FEEDER.next();
         let settings = &context.settings;

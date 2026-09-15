@@ -29,7 +29,7 @@ An unmodified, pinned Plato build runs on the physical Kobo Libra H₂O and prod
 - [ ] P01-T01 Record the Libra H₂O model identifier, firmware version, resolution, storage/memory assumptions, refresh settings, source commit, and build toolchain versions.
   - Files: `doc/implementation-plan/` benchmark records or a future benchmark directory
   - Verify: V01-01
-- [ ] P01-T02 Assemble a stable representative corpus covering simple EPUB, image-heavy EPUB, large EPUB, text PDF, complex PDF, CBZ, and CBR where supported by the current build.
+- [x] P01-T02 Assemble a stable representative corpus covering simple EPUB, image-heavy EPUB, large EPUB, text PDF, complex PDF, CBZ, and CBR where supported by the current build.
   - Files: external or gitignored benchmark data plus manifest metadata
   - Verify: V01-01
 - [ ] P01-T03 Run the untouched build through fixed forward, backward, cold, cached, and book-opening scenarios and record repeated observations without changing Plato behavior.
@@ -59,6 +59,8 @@ An unmodified, pinned Plato build runs on the physical Kobo Libra H₂O and prod
 ## Execution notes
 
 - Prepared the baseline procedure and record templates in `doc/implementation-plan/benchmarks/`.
+- Versioned the canonical corpus under `benchmarks/corpus/` and changed
+  `copy-test-books.sh` to use it by default.
 - Local validation: `mise exec -- cargo metadata --locked --no-deps --format-version 1` passed with Rust/Cargo 1.98.1.
 - Confirmed external evidence: Libra H₂O identity/firmware, representative corpus location/checksums, successful emulator smoke test, and physical installation. Pending: repeated device observations and successful physical launch after the glibc-compatible binary deployment.
 - Capability discrepancy to resolve during corpus assembly: the plan names CBR, while `README.md` currently documents CBZ but not CBR.

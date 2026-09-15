@@ -29,7 +29,7 @@ use plato_core::settings::{ButtonScheme, Settings, SETTINGS_PATH, RotationLock, 
 use plato_core::frontlight::{Frontlight, StandardFrontlight, NaturalFrontlight, PremixedFrontlight};
 use plato_core::lightsensor::{LightSensor, KoboLightSensor};
 use plato_core::battery::{Battery, KoboBattery};
-use plato_core::geom::{Rectangle, DiagDir, Region};
+use plato_core::geom::{CycleDir, Rectangle, DiagDir, Region};
 use plato_core::view::home::Home;
 use plato_core::view::reader::Reader;
 use plato_core::view::dialog::Dialog;
@@ -40,6 +40,7 @@ use plato_core::library::Library;
 use plato_core::font::Fonts;
 use plato_core::rtc::Rtc;
 use plato_core::context::Context;
+use crate::benchmark::Benchmark;
 
 pub const APP_NAME: &str = "Plato";
 const FB_DEVICE: &str = "/dev/fb0";
@@ -205,6 +206,10 @@ enum ExitStatus {
     PowerOff,
 }
 
+fn benchmark_page_state(view: &dyn View) -> Option<(String, usize)> {
+    view.downcast_ref::<Reader>().map(|reader| reader.benchmark_page_state())
+}
+
 pub fn run() -> Result<(), Error> {
     let mut inactive_since = Instant::now();
     let mut exit_status = ExitStatus::Quit;
@@ -321,6 +326,7 @@ pub fn run() -> Result<(), Error> {
                                                      &mut rq, &mut context)?);
 
     let mut updating = Vec::new();
+    let mut benchmark = Benchmark::new();
     let current_dir = env::current_dir()?;
 
     println!("{} is running on a Kobo {}.", APP_NAME,
@@ -957,6 +963,19 @@ pub fn run() -> Result<(), Error> {
             Event::Select(EntryId::Quit) => {
                 break;
             },
+            Event::Page(dir) => {
+                if let Some((page, cache_entries)) = benchmark_page_state(view.as_ref()) {
+                    let direction = match dir {
+                        CycleDir::Next => "next",
+                        CycleDir::Previous => "previous",
+                    };
+                    benchmark.start_page(direction, page, cache_entries);
+                    handle_event(view.as_mut(), &Event::Page(dir), &tx, &mut bus, &mut rq, &mut context);
+                    benchmark.mark_page_handler_complete();
+                } else {
+                    handle_event(view.as_mut(), &Event::Page(dir), &tx, &mut bus, &mut rq, &mut context);
+                }
+            },
             Event::MightSuspend if context.settings.auto_suspend > 0.0 => {
                 if context.shared || tasks.iter().any(|task| task.id == TaskId::PrepareSuspend ||
                                                              task.id == TaskId::Suspend) {
@@ -978,7 +997,15 @@ pub fn run() -> Result<(), Error> {
             },
         }
 
-        process_render_queue(view.as_ref(), &mut rq, &mut context, &mut updating);
+        let update_modes = if benchmark.enabled() {
+            rq.keys().map(|(mode, _)| format!("{:?}", mode)).collect()
+        } else {
+            Vec::new()
+        };
+        let timing = process_render_queue(view.as_ref(), &mut rq, &mut context, &mut updating, benchmark.enabled());
+        if let Some(timing) = timing {
+            benchmark.finish_page(benchmark_page_state(view.as_ref()), update_modes, timing);
+        }
 
         while let Some(ce) = bus.pop_front() {
             tx.send(ce).ok();
