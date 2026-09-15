@@ -206,8 +206,12 @@ enum ExitStatus {
     PowerOff,
 }
 
-fn benchmark_page_state(view: &dyn View) -> Option<(String, usize)> {
-    view.downcast_ref::<Reader>().map(|reader| reader.benchmark_page_state())
+fn benchmark_page_state(view: &dyn View) -> Option<(String, usize, String, String, String)> {
+    view.downcast_ref::<Reader>().map(|reader| {
+        let (page, cache_entries) = reader.benchmark_page_state();
+        (page, cache_entries, reader.benchmark_book_path(), reader.benchmark_book_title(),
+         reader.benchmark_book_format())
+    })
 }
 
 pub fn run() -> Result<(), Error> {
@@ -347,16 +351,20 @@ pub fn run() -> Result<(), Error> {
                     event @ DeviceEvent::Button { code: ButtonCode::Backward,
                                                   status: ButtonStatus::Released, .. }
                         if benchmark.enabled() && benchmark_page_state(view.as_ref()).is_some() => {
-                        let (page, cache_entries) = benchmark_page_state(view.as_ref()).unwrap();
-                        benchmark.start_page("previous", page, cache_entries);
+                        let (page, cache_entries, book_path, book_title, book_format) =
+                            benchmark_page_state(view.as_ref()).unwrap();
+                        benchmark.start_page("previous", page, cache_entries, book_path,
+                                             book_title, book_format);
                         handle_event(view.as_mut(), &Event::Device(event), &tx, &mut bus, &mut rq, &mut context);
                         benchmark.mark_page_handler_complete();
                     },
                     event @ DeviceEvent::Button { code: ButtonCode::Forward,
                                                   status: ButtonStatus::Released, .. }
                         if benchmark.enabled() && benchmark_page_state(view.as_ref()).is_some() => {
-                        let (page, cache_entries) = benchmark_page_state(view.as_ref()).unwrap();
-                        benchmark.start_page("next", page, cache_entries);
+                        let (page, cache_entries, book_path, book_title, book_format) =
+                            benchmark_page_state(view.as_ref()).unwrap();
+                        benchmark.start_page("next", page, cache_entries, book_path,
+                                             book_title, book_format);
                         handle_event(view.as_mut(), &Event::Device(event), &tx, &mut bus, &mut rq, &mut context);
                         benchmark.mark_page_handler_complete();
                     },
@@ -980,12 +988,14 @@ pub fn run() -> Result<(), Error> {
                 break;
             },
             Event::Page(dir) => {
-                if let Some((page, cache_entries)) = benchmark_page_state(view.as_ref()) {
+                if let Some((page, cache_entries, book_path, book_title, book_format)) =
+                    benchmark_page_state(view.as_ref()) {
                     let direction = match dir {
                         CycleDir::Next => "next",
                         CycleDir::Previous => "previous",
                     };
-                    benchmark.start_page(direction, page, cache_entries);
+                    benchmark.start_page(direction, page, cache_entries, book_path, book_title,
+                                         book_format);
                     handle_event(view.as_mut(), &Event::Page(dir), &tx, &mut bus, &mut rq, &mut context);
                     benchmark.mark_page_handler_complete();
                 } else {
@@ -1020,7 +1030,9 @@ pub fn run() -> Result<(), Error> {
         };
         let timing = process_render_queue(view.as_ref(), &mut rq, &mut context, &mut updating, benchmark.enabled());
         if let Some(timing) = timing {
-            benchmark.finish_page(benchmark_page_state(view.as_ref()), update_modes, timing);
+            let page_state = benchmark_page_state(view.as_ref())
+                .map(|(page, cache_entries, ..)| (page, cache_entries));
+            benchmark.finish_page(page_state, update_modes, timing);
         }
 
         while let Some(ce) = bus.pop_front() {

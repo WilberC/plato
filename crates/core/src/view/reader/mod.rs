@@ -243,6 +243,18 @@ impl Reader {
         (format!("{:?}", self.current_page), self.cache.len())
     }
 
+    pub fn benchmark_book_path(&self) -> String {
+        self.info.file.path.to_string_lossy().into_owned()
+    }
+
+    pub fn benchmark_book_title(&self) -> String {
+        self.info.title()
+    }
+
+    pub fn benchmark_book_format(&self) -> String {
+        self.info.file.kind.clone()
+    }
+
     pub fn new(rect: Rectangle, mut info: Info, hub: &Hub, context: &mut Context) -> Option<Reader> {
         let id = ID_FEEDER.next();
         let settings = &context.settings;

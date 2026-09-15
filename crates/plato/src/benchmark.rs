@@ -19,6 +19,9 @@ struct Sample {
     direction: &'static str,
     page_before: String,
     cache_entries_before: usize,
+    book_path: String,
+    book_title: String,
+    book_format: String,
     page_handler_complete: Option<Instant>,
 }
 
@@ -56,7 +59,8 @@ impl Benchmark {
         Benchmark { output, sequence: 0, sample: None }
     }
 
-    pub fn start_page(&mut self, direction: &'static str, page: String, cache_entries: usize) {
+    pub fn start_page(&mut self, direction: &'static str, page: String, cache_entries: usize,
+                      book_path: String, book_title: String, book_format: String) {
         if self.output.is_none() {
             return;
         }
@@ -67,6 +71,9 @@ impl Benchmark {
             direction,
             page_before: page,
             cache_entries_before: cache_entries,
+            book_path,
+            book_title,
+            book_format,
             page_handler_complete: None,
         });
     }
@@ -88,6 +95,9 @@ impl Benchmark {
             "sequence": sample.id,
             "device_model": format!("{}", CURRENT_DEVICE.model),
             "direction": sample.direction,
+            "book_path": sample.book_path,
+            "book_title": sample.book_title,
+            "book_format": sample.book_format,
             "page_before": sample.page_before,
             "page_after": page.as_ref().map(|value| value.0.clone()),
             "cache_entries_before": sample.cache_entries_before,
