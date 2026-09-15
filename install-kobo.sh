@@ -67,7 +67,8 @@ printf '%s\n' '[INFO] Installing Plato files.'
 sudo mkdir -p "$MOUNTPOINT/.adds/plato"
 sudo cp -r --no-preserve=ownership dist/. "$MOUNTPOINT/.adds/plato/"
 sudo cp --no-preserve=ownership contrib/NickelMenu/plato* "$MOUNTPOINT/.adds/nm/"
-sudo chmod +x "$MOUNTPOINT/.adds/plato/plato.sh"
+sudo chmod +x "$MOUNTPOINT/.adds/plato/plato.sh" "$MOUNTPOINT/.adds/plato/plato-benchmark.sh"
+sudo rm -f "$MOUNTPOINT/.adds/plato/info.log" "$MOUNTPOINT/.adds/plato/benchmark.jsonl"
 
 if [ ! -e "$MOUNTPOINT/.adds/plato/Settings.toml" ]; then
 	printf '%s\n' '[INFO] Creating the initial onboard library settings.'
@@ -82,6 +83,7 @@ fi
 
 [ -x "$MOUNTPOINT/.adds/plato/plato" ] || error 'Installed Plato binary is not executable.'
 [ -x "$MOUNTPOINT/.adds/plato/plato.sh" ] || error 'Installed launcher is not executable.'
+[ -x "$MOUNTPOINT/.adds/plato/plato-benchmark.sh" ] || error 'Benchmark launcher is not executable.'
 [ -f "$MOUNTPOINT/.adds/nm/plato" ] || error 'NickelMenu entry was not installed.'
 [ -f "$MOUNTPOINT/.adds/nm/plato-benchmark" ] || error 'NickelMenu benchmark entry was not installed.'
 [ -f "$MOUNTPOINT/.adds/plato/Settings.toml" ] || error 'Plato settings were not installed.'

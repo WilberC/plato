@@ -137,6 +137,9 @@ the opt-in instrumentation and writes JSONL to
 ./collect-kobo-benchmark.sh
 ```
 
+Re-running `install-kobo.sh` clears the device's previous Plato and benchmark
+logs so the next validation run starts from a clean state.
+
 The default build downloads the release archive and required prebuilt Kobo
 libraries. It writes ignored working artifacts to `libs/`, `bin/`,
 `resources/`, `target/`, and `dist/`. Do not hand-edit those outputs.
