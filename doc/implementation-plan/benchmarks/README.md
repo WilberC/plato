@@ -16,9 +16,10 @@ runner creates a JSON metadata sidecar and starts the headless emulator:
 ./benchmarks/compare.py benchmarks/results/run-a.jsonl benchmarks/results/run-b.jsonl
 ```
 
-Each JSONL record contains a schema version, device model, page identity before
-and after the turn, direction, cache entry counts, requested update modes, and
-monotonic nanosecond stage timestamps. `framebuffer_completion` and
+Each JSONL record contains a schema version, device model, book path, display
+title, detected format, page identity before and after the turn, direction,
+cache entry counts, requested update modes, and monotonic nanosecond stage
+timestamps. `framebuffer_completion` and
 `visible_page_ready` remain `null` because the current loop cannot observe those
 boundaries reliably. The `*.meta.json` sidecar preserves the source commit,
 host, and run start time.
