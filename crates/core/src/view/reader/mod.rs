@@ -78,6 +78,7 @@ pub struct Reader {
     focus: Option<ViewId>,
     search: Option<Search>,
     search_direction: LinearDir,
+    prefetch_direction: CycleDir,
     held_buttons: FxHashSet<ButtonCode>,
     selection: Option<Selection>,
     target_annotation: Option<[TextLocation; 2]>,
@@ -391,6 +392,7 @@ impl Reader {
                 focus: None,
                 search: None,
                 search_direction: LinearDir::Forward,
+                prefetch_direction: CycleDir::Next,
                 held_buttons: FxHashSet::default(),
                 selection: None,
                 target_annotation: None,
@@ -456,6 +458,7 @@ impl Reader {
             focus: None,
             search: None,
             search_direction: LinearDir::Forward,
+            prefetch_direction: CycleDir::Next,
             held_buttons: FxHashSet::default(),
             selection: None,
             target_annotation: None,
@@ -869,6 +872,7 @@ impl Reader {
         };
         match loc {
             Some(location) if location != current_page || self.view_port.page_offset != page_offset => {
+                self.prefetch_direction = dir;
                 if let Some(ref mut s) = self.search {
                     s.current_page = s.highlights.range(..=location).count().saturating_sub(1);
                 }
@@ -1184,20 +1188,21 @@ impl Reader {
 
         if self.view_port.zoom_mode == ZoomMode::FitToPage ||
            self.view_port.zoom_mode == ZoomMode::FitToWidth {
+            let location = match self.prefetch_direction {
+                CycleDir::Next => last_location,
+                CycleDir::Previous => first_location,
+            };
+            let direction = self.prefetch_direction;
             let doc2 = self.doc.clone();
             let hub2 = hub.clone();
             thread::spawn(move || {
                 let mut doc = doc2.lock().unwrap();
-                if let Some(next_location) = doc.resolve_location(Location::Next(last_location)) {
-                    hub2.send(Event::LoadPixmap(next_location)).ok();
-                }
-            });
-            let doc3 = self.doc.clone();
-            let hub3 = hub.clone();
-            thread::spawn(move || {
-                let mut doc = doc3.lock().unwrap();
-                if let Some(previous_location) = doc.resolve_location(Location::Previous(first_location)) {
-                    hub3.send(Event::LoadPixmap(previous_location)).ok();
+                let neighbor = match direction {
+                    CycleDir::Next => Location::Next(location),
+                    CycleDir::Previous => Location::Previous(location),
+                };
+                if let Some(prefetch_location) = doc.resolve_location(neighbor) {
+                    hub2.send(Event::LoadPixmap(prefetch_location)).ok();
                 }
             });
         }
