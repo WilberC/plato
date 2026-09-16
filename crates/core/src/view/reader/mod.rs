@@ -239,6 +239,22 @@ fn word_separator(lang: &str) -> &'static str {
 }
 
 impl Reader {
+    pub fn benchmark_page_state(&self) -> (String, usize) {
+        (format!("{:?}", self.current_page), self.cache.len())
+    }
+
+    pub fn benchmark_book_path(&self) -> String {
+        self.info.file.path.to_string_lossy().into_owned()
+    }
+
+    pub fn benchmark_book_title(&self) -> String {
+        self.info.title()
+    }
+
+    pub fn benchmark_book_format(&self) -> String {
+        self.info.file.kind.clone()
+    }
+
     pub fn new(rect: Rectangle, mut info: Info, hub: &Hub, context: &mut Context) -> Option<Reader> {
         let id = ID_FEEDER.next();
         let settings = &context.settings;
@@ -499,6 +515,13 @@ impl Reader {
         self.text.insert(location, words);
     }
 
+    fn load_visible_text(&mut self) {
+        let locations: Vec<usize> = self.chunks.iter().map(|chunk| chunk.location).collect();
+        for location in locations {
+            self.load_text(location);
+        }
+    }
+
     fn go_to_page(&mut self, location: usize, record: bool, hub: &Hub, rq: &mut RenderQueue, context: &Context) {
         let loc = {
             let mut doc = self.doc.lock().unwrap();
@@ -599,6 +622,7 @@ impl Reader {
     }
 
     fn go_to_annotation(&mut self, dir: CycleDir, hub: &Hub, rq: &mut RenderQueue, context: &Context) {
+        self.load_visible_text();
         let loc_annot = self.info.reader.as_ref().and_then(|r| {
             match dir {
                 CycleDir::Next => self.text_location_range().and_then(|[_, max]| {
@@ -748,7 +772,6 @@ impl Reader {
 
                                 loop {
                                     self.load_pixmap(location);
-                                    self.load_text(location);
                                     let Resource { mut frame, .. } = self.cache[&location];
                                     if location == first_chunk.location {
                                         frame.max.y = first_chunk.frame.min.y;
@@ -811,7 +834,6 @@ impl Reader {
                             ScrollMode::Screen => {
                                 let &RenderChunk { location, frame, .. } = self.chunks.last().unwrap();
                                 self.load_pixmap(location);
-                                self.load_text(location);
                                 let pixmap_frame = self.cache[&location].frame;
                                 let next_top_offset = frame.max.y - pixmap_frame.min.y;
                                 if next_top_offset == pixmap_frame.height() as i32 {
@@ -1019,7 +1041,9 @@ impl Reader {
         self.annotations.clear();
         if let Some(annotations) = self.info.reader.as_ref().map(|r| &r.annotations).filter(|a| !a.is_empty()) {
             for chunk in &self.chunks {
-                let words = &self.text[&chunk.location];
+                let Some(words) = self.text.get(&chunk.location) else {
+                    continue;
+                };
                 if words.is_empty() {
                     continue;
                 }
@@ -1057,7 +1081,6 @@ impl Reader {
         match self.view_port.zoom_mode {
             ZoomMode::FitToPage => {
                 self.load_pixmap(location);
-                self.load_text(location);
                 let Resource { frame, scale, .. } = self.cache[&location];
                 let dx = smw + ((self.rect.width() - frame.width()) as i32 - 2 * smw) / 2;
                 let dy = smw + ((self.rect.height() - frame.height()) as i32 - 2 * smw) / 2;
@@ -1069,7 +1092,6 @@ impl Reader {
                     let mut height = 0;
                     while height < available_height {
                         self.load_pixmap(location);
-                        self.load_text(location);
                         let Resource { mut frame, scale, .. } = self.cache[&location];
                         if location == self.current_page {
                             frame.min.y += self.view_port.page_offset.y;
@@ -1106,7 +1128,6 @@ impl Reader {
                 },
                 ScrollMode::Page => {
                     self.load_pixmap(location);
-                    self.load_text(location);
                     let available_height = self.rect.height() as i32 - 2 * smw;
                     let Resource { mut frame, scale, .. } = self.cache[&location];
                     frame.min.y += self.view_port.page_offset.y;
@@ -1117,7 +1138,6 @@ impl Reader {
             },
             ZoomMode::Custom(_) => {
                 self.load_pixmap(location);
-                self.load_text(location);
                 let Resource { frame, scale, .. } = self.cache[&location];
                 let vpw = self.rect.width() as i32 - 2 * smw;
                 let vph = self.rect.height() as i32 - 2 * smw;
@@ -1144,6 +1164,21 @@ impl Reader {
             self.cache.remove(&extremum);
         }
 
+        // Text extraction is lazy, so keep its working set bounded as well.
+        while self.text.len() > 3 {
+            let left_count = self.text.keys().filter(|&&location| location < first_location).count();
+            let right_count = self.text.keys().filter(|&&location| location > last_location).count();
+            let extremum = if left_count >= right_count {
+                self.text.keys().min().cloned().unwrap()
+            } else {
+                self.text.keys().max().cloned().unwrap()
+            };
+            self.text.remove(&extremum);
+        }
+
+        if self.info.reader.as_ref().map_or(false, |reader| !reader.annotations.is_empty()) {
+            self.load_visible_text();
+        }
         self.update_annotations();
         self.update_noninverted_regions(context.fb.inverted());
 
@@ -2865,6 +2900,7 @@ impl View for Reader {
                 true
             },
             Event::Device(DeviceEvent::Finger { position, status: FingerStatus::Motion, id, .. }) if self.state == State::Selection(id) => {
+                self.load_visible_text();
                 let mut nearest_word = None;
                 let mut dmin = u32::MAX;
                 let dmax = (scale_by_dpi(RECT_DIST_JITTER, CURRENT_DEVICE.dpi) as i32).pow(2) as u32;
@@ -2964,6 +3000,7 @@ impl View for Reader {
                 true
             },
             Event::Gesture(GestureEvent::Tap(center)) if self.state == State::AdjustSelection && self.rect.includes(center) => {
+                self.load_visible_text();
                 let mut found = None;
                 let mut dmin = u32::MAX;
                 let dmax = (scale_by_dpi(RECT_DIST_JITTER, CURRENT_DEVICE.dpi) as i32).pow(2) as u32;
@@ -3272,6 +3309,8 @@ impl View for Reader {
                     return true;
                 }
 
+                self.load_visible_text();
+
                 let mut found = None;
                 let mut dmin = u32::MAX;
                 let dmax = (scale_by_dpi(RECT_DIST_JITTER, CURRENT_DEVICE.dpi) as i32).pow(2) as u32;
@@ -3317,6 +3356,7 @@ impl View for Reader {
                 true
             },
             Event::Gesture(GestureEvent::HoldFingerLong(center, _)) if self.rect.includes(center) => {
+                self.load_visible_text();
                 if let Some(text) = self.selected_text() {
                     let query = text.trim_matches(|c: char| !c.is_alphanumeric()).to_string();
                     let language = self.info.language.clone();
@@ -3388,6 +3428,7 @@ impl View for Reader {
                 true
             },
             Event::Submit(ViewId::EditNoteInput, ref note) => {
+                self.load_visible_text();
                 let selection = self.selection.take().map(|sel| [sel.start, sel.end]);
 
                 if let Some(sel) = selection {
@@ -3697,6 +3738,7 @@ impl View for Reader {
                 true
             },
             Event::Select(EntryId::HighlightSelection) => {
+                self.load_visible_text();
                 if let Some(sel) = self.selection.take() {
                     let text = self.text_excerpt([sel.start, sel.end]).unwrap();
                     if let Some(r) = self.info.reader.as_mut() {
@@ -3716,6 +3758,7 @@ impl View for Reader {
                 true
             },
             Event::Select(EntryId::DefineSelection) => {
+                self.load_visible_text();
                 if let Some(text) = self.selected_text() {
                     let query = text.trim_matches(|c: char| !c.is_alphanumeric()).to_string();
                     let language = self.info.language.clone();
@@ -3725,6 +3768,7 @@ impl View for Reader {
                 true
             },
             Event::Select(EntryId::SearchForSelection) => {
+                self.load_visible_text();
                 if let Some(text) = self.selected_text() {
                     let text = text.trim_matches(|c: char| !c.is_alphanumeric());
                     match make_query(text) {

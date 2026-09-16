@@ -249,8 +249,15 @@ pub fn render(view: &dyn View, wait: bool, ids: &FxHashMap<Id, Vec<Rectangle>>, 
     }
 }
 
+pub struct RenderQueueTiming {
+    pub rasterization_complete: Instant,
+    pub framebuffer_submission_complete: Instant,
+}
+
 #[inline]
-pub fn process_render_queue(view: &dyn View, rq: &mut RenderQueue, context: &mut Context, updating: &mut Vec<UpdateData>) {
+pub fn process_render_queue(view: &dyn View, rq: &mut RenderQueue, context: &mut Context, updating: &mut Vec<UpdateData>, measure: bool) -> Option<RenderQueueTiming> {
+    let mut rasterization_complete = None;
+    let mut framebuffer_submission_complete = None;
     for ((mode, wait), pairs) in rq.drain() {
         let mut ids = FxHashMap::default();
         let mut rects = Vec::new();
@@ -266,6 +273,9 @@ pub fn process_render_queue(view: &dyn View, rq: &mut RenderQueue, context: &mut
 
         render(view, wait, &ids, &mut rects, &mut bgs,
                context.fb.as_mut(), &mut context.fonts, updating);
+        if measure {
+            rasterization_complete = Some(Instant::now());
+        }
 
         for rect in rects {
             match context.fb.update(&rect, mode) {
@@ -273,6 +283,18 @@ pub fn process_render_queue(view: &dyn View, rq: &mut RenderQueue, context: &mut
                 Err(err) => { eprintln!("Can't update {}: {:#}.", rect, err); },
             }
         }
+        if measure {
+            framebuffer_submission_complete = Some(Instant::now());
+        }
+    }
+
+    if measure {
+        Some(RenderQueueTiming {
+            rasterization_complete: rasterization_complete.unwrap_or_else(Instant::now),
+            framebuffer_submission_complete: framebuffer_submission_complete.unwrap_or_else(Instant::now),
+        })
+    } else {
+        None
     }
 }
 

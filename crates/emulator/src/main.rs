@@ -600,7 +600,7 @@ fn main() -> Result<(), Error> {
             }
         }
 
-        process_render_queue(view.as_ref(), &mut rq, &mut context, &mut updating);
+        process_render_queue(view.as_ref(), &mut rq, &mut context, &mut updating, false);
 
         while let Some(ce) = bus.pop_front() {
             tx.send(ce).ok();

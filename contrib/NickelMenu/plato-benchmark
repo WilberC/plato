@@ -1,0 +1,1 @@
+menu_item  :main  :Plato benchmark  :cmd_spawn  :quiet:/mnt/onboard/.adds/plato/plato-benchmark.sh

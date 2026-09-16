@@ -34,7 +34,9 @@ pub const FZ_PAGE_BLOCK_STRUCT: libc::c_int = 2;
 pub const FZ_PAGE_BLOCK_VECTOR: libc::c_int = 3;
 pub const FZ_PAGE_BLOCK_GRID: libc::c_int = 4;
 
-pub const CACHE_SIZE: libc::size_t = 32 * 1024 * 1024;
+// Keep decoded PDF resources available across adjacent page turns. The Kobo
+// reader cache remains independently bounded; this is MuPDF's internal store.
+pub const CACHE_SIZE: libc::size_t = 64 * 1024 * 1024;
 
 pub enum FzContext {}
 pub enum FzDocument {}
