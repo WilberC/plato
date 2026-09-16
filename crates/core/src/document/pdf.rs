@@ -489,11 +489,12 @@ impl<'a> PdfPage<'a> {
             let len = color_samples * (width * height) as usize;
             let pixmap_data = slice::from_raw_parts((*pixmap).samples, len);
             let mut data = Vec::new();
-            if data.try_reserve(len).is_err() {
+            if data.try_reserve_exact(len).is_err() {
                 fz_drop_pixmap(self.ctx.0, pixmap);
                 return None;
             }
-            data.extend(pixmap_data);
+            data.resize(len, 0);
+            data.copy_from_slice(pixmap_data);
 
             fz_drop_pixmap(self.ctx.0, pixmap);
 
