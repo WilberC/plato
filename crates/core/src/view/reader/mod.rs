@@ -1164,6 +1164,18 @@ impl Reader {
             self.cache.remove(&extremum);
         }
 
+        // Text extraction is lazy, so keep its working set bounded as well.
+        while self.text.len() > 3 {
+            let left_count = self.text.keys().filter(|&&location| location < first_location).count();
+            let right_count = self.text.keys().filter(|&&location| location > last_location).count();
+            let extremum = if left_count >= right_count {
+                self.text.keys().min().cloned().unwrap()
+            } else {
+                self.text.keys().max().cloned().unwrap()
+            };
+            self.text.remove(&extremum);
+        }
+
         if self.info.reader.as_ref().map_or(false, |reader| !reader.annotations.is_empty()) {
             self.load_visible_text();
         }
