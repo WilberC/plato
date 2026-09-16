@@ -60,3 +60,5 @@ The project can attribute representative page-turn latency to input, preparation
 - 2026-09-15: Added `benchmarks/analyze.py` for reproducible P50/P95/P99 aggregation by book, direction, and update mode, with explicit outlier visibility.
 - 2026-09-15: Analyzed the complete 207-record Libra H₂O capture. The complex PDF is the confirmed bottleneck: page preparation reaches 13.8 seconds on the slowest sample and rasterization/submission follows closely. Resource and optical measurements remain pending.
 - 2026-09-16: Started the first bounded optimization experiment. MuPDF's internal resource cache is 64 MiB, and reader text extraction is now lazy with a three-location working-set bound. These changes require one complete before/after physical matrix before acceptance.
+
+- 2026-09-16: Collected the optimized 227-record matrix. Overall P95 improved from 707.3 ms to 582.0 ms, but complex-PDF P50/P95 did not improve (725.2/13663.4 ms versus 713.8/12779.3 ms baseline), so the cache/text batch is not accepted as the complex-PDF fix.
