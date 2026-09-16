@@ -56,4 +56,4 @@ The reader can evaluate bounded N+1/N+2 pre-rendering and backward-page retentio
 
 ## Execution notes
 
-- None yet.
+- 2026-09-16: Replaced two-sided speculative page rendering with one direction-aware neighbor prefetch. This keeps visible work ahead of speculation on expensive PDFs; physical benefit remains pending the next complete matrix.
