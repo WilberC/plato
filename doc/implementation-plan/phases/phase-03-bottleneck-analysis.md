@@ -62,3 +62,4 @@ The project can attribute representative page-turn latency to input, preparation
 - 2026-09-16: Started the first bounded optimization experiment. MuPDF's internal resource cache is 64 MiB, and reader text extraction is now lazy with a three-location working-set bound. These changes require one complete before/after physical matrix before acceptance.
 
 - 2026-09-16: Collected the optimized 227-record matrix. Overall P95 improved from 707.3 ms to 582.0 ms, but complex-PDF P50/P95 did not improve (725.2/13663.4 ms versus 713.8/12779.3 ms baseline), so the cache/text batch is not accepted as the complex-PDF fix.
+- 2026-09-16: Replaced per-byte PDF pixmap transfer with an exact bulk slice copy after reservation. The compatible artifact passes local checks and remains capped at GLIBC_2.18; this change is queued for the next single complete physical comparison.
